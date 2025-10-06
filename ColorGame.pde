@@ -37,7 +37,7 @@ float endScreenStartTime = 0;
 void setup() {
   size(800, 600);
   rectMode(CORNER);
-  font = createFont("Arial", 32);      // main text font
+  font = createFont("Arial", 32);
   smallFont = createFont("Arial", 16); // used for graph labels
   textFont(font);
   smooth(8);
@@ -156,7 +156,7 @@ void mousePressed() {
     }
   } 
   else if (gameOver) {
-    // Only allow restart after a short delay (halfway through fade-in)
+    // Only allow restart after delday
     float now = millis() / 1000.0;
     if (now - endScreenStartTime > restartDelay + 0.25) {
       inIntro = true;
