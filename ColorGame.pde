@@ -1,4 +1,5 @@
 import gifAnimation.*;
+import processing.sound.*;
 
 Gif introGif;
 
@@ -19,6 +20,8 @@ PFont smallFont;
 
 int prevColorIndex = -1;
 int prevWordIndex = -1;
+SoundFile successSound;
+SoundFile failSound;
 
 boolean hoverStart = false;
 
@@ -29,9 +32,12 @@ float maxTime = 100;
 float timeDecay = 0.5;       
 boolean hasClickedThisRound; 
 
-float averageScore = 20;  
+float averageScore = 10;  
 float restartDelay = 0.8; 
 float endScreenStartTime = 0;
+SoundFile introMusic;
+
+int highScore = 0;
 
 // ===================== SETUP =====================
 void setup() {
@@ -44,6 +50,11 @@ void setup() {
 
   introGif = new Gif(this, "gif.gif");
   introGif.loop();
+
+successSound = new SoundFile(this, "success.mp3");
+failSound = new SoundFile(this, "fail.mp3");
+introMusic = new SoundFile(this, "MUSIC.mp3");
+introMusic.loop();
 }
 
 // ===================== MAIN DRAW LOOP =====================
@@ -134,7 +145,9 @@ void updateTimer() {
 // ===================== MOUSE HANDLING =====================
 void mousePressed() {
   if (inIntro && hoverStart) {
-    // Start game
+    // Stop intro music and start game
+    if (introMusic.isPlaying()) introMusic.stop();
+    
     inIntro = false;
     inGame = true;
     score = 0;
@@ -147,23 +160,29 @@ void mousePressed() {
     hasClickedThisRound = true;
 
     if (correct) {
+      successSound.play();
       score++;
       nextRound();
     } else {
+      failSound.play();
       inGame = false;
       gameOver = true;
       endScreenStartTime = millis() / 1000.0;
+      if (score > highScore) highScore = score;
     }
   } 
   else if (gameOver) {
-    // Only allow restart after delday
+    // Restart stuff
     float now = millis() / 1000.0;
     if (now - endScreenStartTime > restartDelay + 0.25) {
       inIntro = true;
       gameOver = false;
+      // Restart intro music
+      if (!introMusic.isPlaying()) introMusic.loop();
     }
   }
 }
+
 
 // ===================== GAME SCREEN =====================
 void drawGame() {
@@ -263,6 +282,11 @@ void drawGameOver() {
 
   textSize(36);
   text("Score: " + score, width / 2, 140);
+  
+  fill(200, 255, 200);
+  textSize(28);
+  text("High Score: " + highScore, width / 2, 170);
+
 
   // iq calculation
   float iq = 40 + 60 * (1 - exp(-(score / averageScore) * 1.2));
